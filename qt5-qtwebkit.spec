@@ -5,7 +5,7 @@
 
 Name:           qt5-qtwebkit
 Version:        5.212.0
-Release:        3
+Release:        4
 Summary:        QtWebKit components of Qt5
 License:        LGPLv2 and BSD
 URL:            https://github.com/annulen/webkit
@@ -112,6 +112,12 @@ test -z "$(pkg-config --cflags Qt5WebKit | grep Qt5WebKit)"
 %{_qt5_archdatadir}/mkspecs/modules/*.pri
 
 %changelog
+* Fri Aug 21 2020 lunankun <lunankun@huawei.com> - 5.212.0-4
+- Type:bugfix
+- Id:NA
+- SUG:NA
+- DESC:release +1 for rebuild
+
 * Mon May 18 2020 fengtao <fengtao40@huawei.com> - 5.212.0-3
 - rebuild for libwebp-1.1.0
 
