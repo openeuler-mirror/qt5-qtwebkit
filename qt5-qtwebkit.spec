@@ -1,83 +1,187 @@
 %undefine _annotated_build
-%global _hardened_build         1
-%global add_to_license_files()  mkdir -p _license_files ; cp -p %1 _license_files/$(echo '%1' | sed -e 's!/!.!g')
+
+%global qt_module qtwebkit
+
+%global _hardened_build 1
+
+%global prerel alpha4
+%global prerel_tag -%{prerel}
+
+## NOTE: Lots of files in various subdirectories have the same name (such as
+## "LICENSE") so this short macro allows us to distinguish them by using their
+## directory names (from the source tree) as prefixes for the files.
+%global add_to_license_files() \
+        mkdir -p _license_files ; \
+        cp -p %1 _license_files/$(echo '%1' | sed -e 's!/!.!g')
+
+Name:           qt5-%{qt_module}
+Version:        5.212.0
+Release:        4
+Summary:        Qt5 - QtWebKit components
+
+License:        LGPLv2 and BSD
+URL:            https://github.com/qtwebkit/qtwebkit
+Source0:        https://github.com/qtwebkit/qtwebkit/releases/download/%{qt_module}-%{version}%{?prerel_tag}/%{qt_module}-%{version}%{?prerel_tag}.tar.xz
+
+# Patch for new CMake policy CMP0071 to explicitly use old behaviour.
+Patch2:         qtwebkit-5.212.0_cmake_cmp0071.patch
+Patch3:         fix_build_with_bison.patch
+
+BuildRequires:  bison
+BuildRequires:  cmake
+BuildRequires:  flex
+BuildRequires:  pkgconfig(fontconfig)
+BuildRequires:  pkgconfig(libwoff2dec)
+BuildRequires:  pkgconfig(gio-2.0)
+BuildRequires:  pkgconfig(glib-2.0)
+BuildRequires:  gperf
+BuildRequires:  pkgconfig(gstreamer-1.0)
+BuildRequires:  pkgconfig(gstreamer-app-1.0)
+BuildRequires:  hyphen-devel
+BuildRequires:  pkgconfig(icu-i18n) pkgconfig(icu-uc)
+BuildRequires:  libjpeg-devel
+BuildRequires:  pkgconfig(libpng)
+BuildRequires:  pkgconfig(libwebp)
+BuildRequires:  pkgconfig(xcomposite)
+BuildRequires:  pkgconfig(xrender)
+BuildRequires:  pkgconfig(libxslt)
+BuildRequires:  pkgconfig(gl)
+BuildRequires:  pkgconfig(gstreamer-gl-1.0)
+BuildRequires:  pkgconfig(gstreamer-mpegts-1.0)
+BuildRequires:  perl-generators
+BuildRequires:  perl(File::Copy)
+BuildRequires:  python3
+BuildRequires:  qt5-qtbase-devel
+BuildRequires:  qt5-qtdeclarative-devel
+%if ! 0%{?bootstrap}
+BuildRequires:  qt5-qtlocation-devel
+BuildRequires:  qt5-qtsensors-devel
+BuildRequires:  qt5-qtwebchannel-devel
+%endif
+BuildRequires:  pkgconfig(ruby)
+BuildRequires:  rubygems
+BuildRequires:  pkgconfig(sqlite3)
+BuildRequires:  pkgconfig(zlib)
+# workaround bad embedded png files, https://bugzilla.redhat.com/1639422
+BuildRequires:  findutils
+BuildRequires:  pngcrush
+
+BuildRequires:  qt5-qtbase-private-devel
+%{?_qt5:Requires: %{_qt5}%{?_isa} = %{_qt5_version}}
+BuildRequires:  qt5-qtdeclarative-private-devel
+%{?_qt5:Requires: qt5-qtdeclarative%{?_isa} = %{_qt5_version}}
+
+
+# filter qml provides
 %global __provides_exclude_from ^%{_qt5_archdatadir}/qml/.*\\.so$
 
-Name:           qt5-qtwebkit
-Version:        5.212.0
-Release:        3
-Summary:        QtWebKit components of Qt5
-License:        LGPLv2 and BSD
-URL:            https://github.com/annulen/webkit
-Source0:        https://github.com/annulen/webkit/releases/download/qtwebkit-%{version}-alpha2/qtwebkit-%{version}-alpha2.tar.xz
-
-BuildRequires:  bison cmake flex pkgconfig(fontconfig) pkgconfig(gio-2.0) pkgconfig(glib-2.0) gperf
-BuildRequires:  pkgconfig(gstreamer-1.0) pkgconfig(gstreamer-app-1.0) hyphen-devel pkgconfig(icu-i18n)
-BuildRequires:  pkgconfig(icu-uc) libjpeg-devel pkgconfig(libpng) pkgconfig(libwebp) pkgconfig(xcomposite)
-BuildRequires:  pkgconfig(xrender) pkgconfig(libxslt) pkgconfig(gl) pkgconfig(gstreamer-gl-1.0)
-BuildRequires:  pkgconfig(gstreamer-mpegts-1.0) perl-generators python2 qt5-qtbase-devel findutils
-BuildRequires:  qt5-qtdeclarative-devel pkgconfig(ruby) rubygems pkgconfig(sqlite3) pkgconfig(zlib)
-BuildRequires:  qt5-qtbase-private-devel qt5-qtdeclarative-private-devel
-%if ! 0%{?bootstrap}
-BuildRequires:  qt5-qtlocation-devel qt5-qtsensors-devel qt5-qtwebchannel-devel
-Provides:       bundled(angle) bundled(brotli) bundled(woff2)
-%endif
-%{?_qt5:Requires: %{_qt5} = %{_qt5_version}}
-%{?_qt5:Requires: qt5-qtdeclarative = %{_qt5_version}}
-
-# Upstream patch to fix pagewidth issue with trojita
-# https://github.com/annulen/webkit/issues/511
-# https://github.com/annulen/webkit/commit/6faf11215e1af27d35e921ae669aa0251a01a1ab
-# https://github.com/annulen/webkit/commit/76420459a13d9440b41864c93cb4ebb404bdab55
-Patch0000:      qt5-qtwebkit-5.212.0-alpha2-fix-pagewidth.patch
-# Patch from Kevin Kofler to fix https://github.com/annulen/webkit/issues/573
-Patch0001:      qtwebkit-5.212.0-alpha2-fix-null-pointer-dereference.patch
-# Patch for new CMake policy CMP0071 to explicitly use old behaviour.
-Patch0002:      qtwebkit-5.212.0_cmake_cmp0071.patch
-# Patch to fix for missing source file.
-Patch0003:      qtwebkit-5.212.0_fix_missing_sources.patch
-## upstream patches (qtwebkit-5.212 branch)
-Patch0004:      0016-cmake-Import-ECMEnableSanitizers.patch
-# disable ES6 Proxy
-Patch0005:      0031-Disable-ES6-Proxy-object.patch
-# ECM Update ECMGeneratePkgConfigFile to latest versio
-Patch0006:      0111-ECM-Update-ECMGeneratePkgConfigFile-to-latest-versio.patch
-## upstream patches (qtwebkit-stable branch)
-Patch0007:      0012-cmake-Fix-include-dir-in-the-generated-pkg-config-fi.patch
-## Fix build with icu 65.1
-Patch0008:      Fix-build-with-icu-65.1.patch
+# We're supposed to specify versions here, but these crap Google libs don't do
+# normal releases. Accordingly, they're not suitable to be system libs.
+Provides:       bundled(angle)
+Provides:       bundled(brotli)
+Provides:       bundled(woff2)
 
 %description
-QtWebKit components of Qt5.
+%{summary}
 
 %package        devel
-Summary:        Development files for qt5-qtwebkit
-Requires:       qt5-qtwebkit = %{version}-%{release}
-Requires:       qt5-qtbase-devel
-Requires:       qt5-qtdeclarative-devel
+Summary:        Development files for %{name}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+Requires:       qt5-qtbase-devel%{?_isa}
+Requires:       qt5-qtdeclarative-devel%{?_isa}
 
 %description    devel
-Development files for qt5-qtwebkit.
+The %{name}-devel package contains libraries and header files for
+developing applications that use %{name}.
+
+%if 0%{?docs}
+%package doc
+Summary: API documentation for %{name}
+BuildRequires: qt5-qdoc
+BuildRequires: qt5-qhelpgenerator
+BuildArch: noarch
+
+%description doc
+%{summary}.
+%endif
+
 
 %prep
-%autosetup -n qtwebkit-%{version}-alpha2 -p1
+%autosetup -p1 -n %{qt_module}-%{version}%{?prerel_tag}
+
+# find/fix pngs with "libpng warning: iCCP: known incorrect sRGB profile"
+find -name \*.png | xargs -n1 pngcrush -ow -fix
+
+# ppc64le failed once with
+# make[2]: *** No rule to make target 'Source/WebCore/Resources/textAreaResizeCorner.png', needed by 'Source/WebKit/qrc_WebCore.cpp'.  Stop.
 test -f Source/WebCore/Resources/textAreaResizeCorner.png
 
+
 %build
+# The following changes of optflags ietc. are adapted from webkitgtk4 package, which
+# is mostly similar to this one...
+#
+# Increase the DIE limit so our debuginfo packages could be size optimized.
+# Decreases the size for x86_64 from ~5G to ~1.1G.
+# https://bugzilla.redhat.com/show_bug.cgi?id=1456261
 %global _dwz_max_die_limit 250000000
+
+# Decrease debuginfo even on ix86 because of:
+# https://bugs.webkit.org/show_bug.cgi?id=140176
+%ifarch s390 s390x %{arm} %{ix86} ppc %{power64} %{mips}
+# Decrease debuginfo verbosity to reduce memory consumption even more
+%global optflags %(echo %{optflags} | sed 's/-g /-g1 /')
+%endif
+
+%ifarch ppc
+# Use linker flag -relax to get WebKit build under ppc(32) with JIT disabled
+%global optflags %{optflags} -Wl,-relax
+%endif
 
 CFLAGS="${CFLAGS:-%optflags}" ; export CFLAGS ;
 CXXFLAGS="${CXXFLAGS:-%optflags} -fpermissive" ; export CXXFLAGS ;
 %{?__global_ldflags:LDFLAGS="${LDFLAGS:-%__global_ldflags}" ; export LDFLAGS ;}
-cmake -DPORT=Qt -DCMAKE_BUILD_TYPE=Release -DENABLE_TOOLS=OFF -DCMAKE_C_FLAGS_RELEASE:STRING="-DNDEBUG" \
-      -DCMAKE_CXX_FLAGS_RELEASE:STRING="-DNDEBUG" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+# We cannot use default cmake macro here as it overwrites some settings queried
+# by qtwebkit cmake from qmake
+cmake . \
+       -DPORT=Qt \
+       -DCMAKE_BUILD_TYPE=Release \
+       -DENABLE_TOOLS=OFF \
+       -DCMAKE_C_FLAGS_RELEASE:STRING="-DNDEBUG" \
+       -DCMAKE_CXX_FLAGS_RELEASE:STRING="-DNDEBUG" \
+       -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+%ifarch s390 s390x ppc %{power64}
+       -DENABLE_JIT=OFF \
+%endif
+%ifarch s390 s390x ppc %{power64}
+       -DUSE_SYSTEM_MALLOC=ON \
+%endif
+       %{?docs:-DGENERATE_DOCUMENTATION=ON} \
+       -DPYTHON_EXECUTABLE:PATH="%{__python3}"
+
 %make_build
+
+%if 0%{?docs}
+%make_build docs
+%endif
+
 
 %install
 %make_install
+
 find %{buildroot} -name '*.la' -exec rm -f {} ';'
+
+# fix pkgconfig files
+#sed -i '/Name/a Description: Qt5 WebKit module' %{buildroot}%{_libdir}/pkgconfig/Qt5WebKit.pc
+#sed -i "s,Cflags: -I%{_qt5_libdir}/qt5/../../include/qt5/Qt5WebKit,Cflags: -I%{_qt5_headerdir}/QtWebKit,g" %{buildroot}%{_libdir}/pkgconfig/Qt5WebKit.pc
+# strictly speaking, this isn't *wrong*, but can made more readable, so let's do that
 sed -i "s,Libs: -L%{_qt5_libdir}/qt5/../ -lQt5WebKit,Libs: -L%{_qt5_libdir} -lQt5WebKit ,g" %{buildroot}%{_libdir}/pkgconfig/Qt5WebKit.pc
+
+#sed -i '/Name/a Description: Qt5 WebKitWidgets module' %{buildroot}%{_libdir}/pkgconfig/Qt5WebKitWidgets.pc
+#sed -i "s,Cflags: -I%{_qt5_libdir}/qt5/../../include/qt5/Qt5WebKitWidgets,Cflags: -I%{_qt5_headerdir}/QtWebKitWidgets,g" %{buildroot}%{_libdir}/pkgconfig/Qt5WebKitWidgets.pc
 sed -i "s,Libs: -L%{_qt5_libdir}/qt5/../ -lQt5WebKitWidgets,Libs: -L%{_qt5_libdir} -lQt5WebKitWidgets ,g" %{buildroot}%{_libdir}/pkgconfig/Qt5WebKitWidgets.pc
+
+# Finally, copy over and rename various files for %%license inclusion
 %add_to_license_files Source/JavaScriptCore/COPYING.LIB
 %add_to_license_files Source/JavaScriptCore/icu/LICENSE
 %add_to_license_files Source/ThirdParty/ANGLE/LICENSE
@@ -93,17 +197,23 @@ sed -i "s,Libs: -L%{_qt5_libdir}/qt5/../ -lQt5WebKitWidgets,Libs: -L%{_qt5_libdi
 %add_to_license_files Source/WTF/wtf/dtoa/COPYING
 %add_to_license_files Source/WTF/wtf/dtoa/LICENSE
 
+
 %check
+# verify Qt5WebKit cflags non-use of -I/.../Qt5WebKit
 export PKG_CONFIG_PATH=%{buildroot}%{_libdir}/pkgconfig
 test -z "$(pkg-config --cflags Qt5WebKit | grep Qt5WebKit)"
 
-%post -p /sbin/ldconfig
-%postun -p /sbin/ldconfig
+
+%ldconfig_scriptlets
 
 %files
-%doc LICENSE.LGPLv21 _license_files/*
-%{_qt5_libdir}/{libQt5WebKit.so.5*,libQt5WebKitWidgets.so.5*}
-%{_qt5_libexecdir}/{QtWebDatabaseProcess,QtWebNetworkProcess,QtWebPluginProcess,QtWebProcess}
+%license LICENSE.LGPLv21 _license_files/*
+%{_qt5_libdir}/libQt5WebKit.so.5*
+%{_qt5_libdir}/libQt5WebKitWidgets.so.5*
+%{_qt5_libexecdir}/QtWebNetworkProcess
+%{_qt5_libexecdir}/QtWebPluginProcess
+%{_qt5_libexecdir}/QtWebProcess
+%{_qt5_libexecdir}/QtWebStorageProcess
 %{_qt5_archdatadir}/qml/QtWebKit/
 
 %files devel
@@ -113,7 +223,18 @@ test -z "$(pkg-config --cflags Qt5WebKit | grep Qt5WebKit)"
 %{_qt5_libdir}/pkgconfig/Qt5*.pc
 %{_qt5_archdatadir}/mkspecs/modules/*.pri
 
+
+%if 0%{?docs}
+%files doc
+%{_qt5_docdir}/qtwebkit.qch
+%{_qt5_docdir}/qtwebkit/
+%endif
+
+
 %changelog
+* Thu Nov 12 2020 wutao <wutao61@huawei.com> - 5.212.0-4
+- update to alpha4 and drop python2 module
+
 * Mon Aug 03 2020 lingsheng <lingsheng@huawei.com> - 5.212.0-3
 - Fix build with icu 65.1
 
