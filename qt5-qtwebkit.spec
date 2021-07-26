@@ -16,7 +16,7 @@
 
 Name:           qt5-%{qt_module}
 Version:        5.212.0
-Release:        4
+Release:        5
 Summary:        Qt5 - QtWebKit components
 
 License:        LGPLv2 and BSD
@@ -26,6 +26,7 @@ Source0:        https://github.com/qtwebkit/qtwebkit/releases/download/%{qt_modu
 # Patch for new CMake policy CMP0071 to explicitly use old behaviour.
 Patch2:         qtwebkit-5.212.0_cmake_cmp0071.patch
 Patch3:         fix_build_with_bison.patch
+Patch4:         fix_build_with_glib2_68.patch
 
 BuildRequires:  bison
 BuildRequires:  cmake
@@ -232,6 +233,9 @@ test -z "$(pkg-config --cflags Qt5WebKit | grep Qt5WebKit)"
 
 
 %changelog
+* Thu July 23 2021 yangyunyi <yangyunyi2@huawei.com> - 5.212.0-5
+- fix build fail with glib 2.68.1
+
 * Thu Nov 12 2020 wutao <wutao61@huawei.com> - 5.212.0-4
 - update to alpha4 and drop python2 module
 
