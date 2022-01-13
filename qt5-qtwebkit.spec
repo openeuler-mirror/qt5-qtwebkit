@@ -16,7 +16,7 @@
 
 Name:           qt5-%{qt_module}
 Version:        5.212.0
-Release:        5
+Release:        6
 Summary:        Qt5 - QtWebKit components
 
 License:        LGPLv2 and BSD
@@ -27,6 +27,7 @@ Source0:        https://github.com/qtwebkit/qtwebkit/releases/download/%{qt_modu
 Patch2:         qtwebkit-5.212.0_cmake_cmp0071.patch
 Patch3:         fix_build_with_bison.patch
 Patch4:         fix_build_with_glib2_68.patch
+Patch5:         0001-fix-TRUE-and-FALSE-was-not-declared.patch
 
 BuildRequires:  bison
 BuildRequires:  cmake
@@ -109,6 +110,7 @@ BuildArch: noarch
 
 %prep
 %autosetup -p1 -n %{qt_module}-%{version}%{?prerel_tag}
+sed -i 's/json.load(bytecodeFile, encoding = "utf-8")/json.load(bytecodeFile)/g' ./Source/JavaScriptCore/generate-bytecode-files
 
 # find/fix pngs with "libpng warning: iCCP: known incorrect sRGB profile"
 find -name \*.png | xargs -n1 pngcrush -ow -fix
@@ -233,6 +235,9 @@ test -z "$(pkg-config --cflags Qt5WebKit | grep Qt5WebKit)"
 
 
 %changelog
+* Thu Jan 13 2022 Ge Wang <wangge20@huawei.com> - 5.212.0-6
+- fix build fail due to json.load dose not surport pramam encoding
+
 * Thu July 23 2021 yangyunyi <yangyunyi2@huawei.com> - 5.212.0-5
 - fix build fail with glib 2.68.1
 
