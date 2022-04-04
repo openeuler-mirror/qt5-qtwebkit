@@ -16,7 +16,7 @@
 
 Name:           qt5-%{qt_module}
 Version:        5.212.0
-Release:        6
+Release:        7
 Summary:        Qt5 - QtWebKit components
 
 License:        LGPLv2 and BSD
@@ -28,6 +28,7 @@ Patch2:         qtwebkit-5.212.0_cmake_cmp0071.patch
 Patch3:         fix_build_with_bison.patch
 Patch4:         fix_build_with_glib2_68.patch
 Patch5:         0001-fix-TRUE-and-FALSE-was-not-declared.patch
+Patch6:         add-riscv64-support.patch
 
 BuildRequires:  bison
 BuildRequires:  cmake
@@ -131,7 +132,7 @@ test -f Source/WebCore/Resources/textAreaResizeCorner.png
 
 # Decrease debuginfo even on ix86 because of:
 # https://bugs.webkit.org/show_bug.cgi?id=140176
-%ifarch s390 s390x %{arm} %{ix86} ppc %{power64} %{mips}
+%ifarch s390 s390x %{arm} %{ix86} ppc %{power64} %{mips} riscv64
 # Decrease debuginfo verbosity to reduce memory consumption even more
 %global optflags %(echo %{optflags} | sed 's/-g /-g1 /')
 %endif
@@ -143,7 +144,7 @@ test -f Source/WebCore/Resources/textAreaResizeCorner.png
 
 CFLAGS="${CFLAGS:-%optflags}" ; export CFLAGS ;
 CXXFLAGS="${CXXFLAGS:-%optflags} -fpermissive" ; export CXXFLAGS ;
-%{?__global_ldflags:LDFLAGS="${LDFLAGS:-%__global_ldflags}" ; export LDFLAGS ;}
+%{?__global_ldflags:LDFLAGS="${LDFLAGS:-%__global_ldflags -latomic}" ; export LDFLAGS ;}
 # We cannot use default cmake macro here as it overwrites some settings queried
 # by qtwebkit cmake from qmake
 cmake . \
@@ -153,10 +154,10 @@ cmake . \
        -DCMAKE_C_FLAGS_RELEASE:STRING="-DNDEBUG" \
        -DCMAKE_CXX_FLAGS_RELEASE:STRING="-DNDEBUG" \
        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-%ifarch s390 s390x ppc %{power64}
+%ifarch s390 s390x ppc %{power64} riscv64
        -DENABLE_JIT=OFF \
 %endif
-%ifarch s390 s390x ppc %{power64}
+%ifarch s390 s390x ppc %{power64} riscv64
        -DUSE_SYSTEM_MALLOC=ON \
 %endif
        %{?docs:-DGENERATE_DOCUMENTATION=ON} \
@@ -235,6 +236,9 @@ test -z "$(pkg-config --cflags Qt5WebKit | grep Qt5WebKit)"
 
 
 %changelog
+* Sun Apr 17 2022 Jingwiw <ixoote@gmail.com> - 5.212.0-7
+- add riscv64 support
+
 * Thu Jan 13 2022 Ge Wang <wangge20@huawei.com> - 5.212.0-6
 - fix build fail due to json.load dose not surport pramam encoding
 
