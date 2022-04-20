@@ -1,0 +1,71 @@
+From d5d8791a6159f6ac5b09b1b782b7a1f9520ab52c Mon Sep 17 00:00:00 2001
+From: wang--ge <wang__ge@126.com>
+Date: Thu, 13 Jan 2022 18:02:19 +0800
+Subject: [PATCH] fix TRUE and FALSE was not declared
+
+---
+ Source/WebCore/platform/text/TextCodecICU.cpp            | 3 +++
+ Source/WebCore/platform/text/icu/UTextProvider.h         | 3 +++
+ Source/WebCore/platform/text/icu/UTextProviderLatin1.cpp | 3 +++
+ Source/WebCore/platform/text/icu/UTextProviderUTF16.cpp  | 3 +++
+ 4 files changed, 12 insertions(+)
+
+diff --git a/Source/WebCore/platform/text/TextCodecICU.cpp b/Source/WebCore/platform/text/TextCodecICU.cpp
+index dd6ff06..ef258c9 100644
+--- a/Source/WebCore/platform/text/TextCodecICU.cpp
++++ b/Source/WebCore/platform/text/TextCodecICU.cpp
+@@ -39,6 +39,9 @@
+ #include <wtf/text/StringBuilder.h>
+ #include <wtf/unicode/CharacterNames.h>
+ 
++#define FALSE (1 != 1)
++#define TRUE  (1 == 1)
++
+ namespace WebCore {
+ 
+ const size_t ConversionBufferSize = 16384;
+diff --git a/Source/WebCore/platform/text/icu/UTextProvider.h b/Source/WebCore/platform/text/icu/UTextProvider.h
+index c254fc4..6bd3bf2 100644
+--- a/Source/WebCore/platform/text/icu/UTextProvider.h
++++ b/Source/WebCore/platform/text/icu/UTextProvider.h
+@@ -28,6 +28,9 @@
+ 
+ #include <unicode/utext.h>
+ 
++#define FALSE (1 != 1)
++#define TRUE  (1 == 1)
++
+ namespace WebCore {
+ 
+ enum class UTextProviderContext {
+diff --git a/Source/WebCore/platform/text/icu/UTextProviderLatin1.cpp b/Source/WebCore/platform/text/icu/UTextProviderLatin1.cpp
+index cd6852c..c4ce2de 100644
+--- a/Source/WebCore/platform/text/icu/UTextProviderLatin1.cpp
++++ b/Source/WebCore/platform/text/icu/UTextProviderLatin1.cpp
+@@ -29,6 +29,9 @@
+ #include "UTextProvider.h"
+ #include <wtf/text/StringImpl.h>
+ 
++#define FALSE (1 != 1)
++#define TRUE  (1 == 1)
++
+ namespace WebCore {
+ 
+ // Latin1 provider
+diff --git a/Source/WebCore/platform/text/icu/UTextProviderUTF16.cpp b/Source/WebCore/platform/text/icu/UTextProviderUTF16.cpp
+index 7aaac48..ab41175 100644
+--- a/Source/WebCore/platform/text/icu/UTextProviderUTF16.cpp
++++ b/Source/WebCore/platform/text/icu/UTextProviderUTF16.cpp
+@@ -28,6 +28,9 @@
+ 
+ #include "UTextProvider.h"
+ 
++#define FALSE (1 != 1)
++#define TRUE  (1 == 1)
++
+ namespace WebCore {
+ 
+ // UTF16ContextAware provider
+-- 
+2.30.0
+
